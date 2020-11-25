@@ -21,10 +21,10 @@ except Exception as e:
         "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.\nError:",
         e)
 
-x.mapdict[(3, 3)].north = 1
-x.mapdict[(3, 2)].south = 1
+x.mapdict[0][(3, 3)].north = 1
+x.mapdict[0][(3, 2)].south = 1
 #x.read()
-x.mapdict[(3, 4)] = Room(
+x.mapdict[0][(3, 4)] = Room(
     3, 4, [3, 2, 2, 2], boss=True, enc=Encounter(p1, Enemy(2)))
 x.load()  # force load the new doors
 lost = False

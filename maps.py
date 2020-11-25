@@ -154,9 +154,10 @@ def assigndoors(mapdict1):
 
 class Dungeon:
     def __init__(self, rooms, plrs):
-        self.mapdict = {}
+        self.mapdict = {-1:{},0:{},1:{}}
+        self.maplayer = 0
         for rm in rooms:
-            self.mapdict[(rm.x, rm.y)] = rm
+            self.mapdict[self.maplayer][(rm.x, rm.y)] = rm
         self.loc = [3, 3]
         self.plr = plrs[0]
         self.plrs = plrs
@@ -164,12 +165,10 @@ class Dungeon:
 
     def prompt(self):
         dir1 = input(">").lower()
-        valid = checkvalid((self.mapdict[self.loc[0], self.loc[1]]), dir1,
-                           self.plr, self.mapdict)
+        valid = checkvalid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         while not ((dir1 in ["north","east","south","west","pickup","help"]) and valid):
             dir1 = input("Invalid. >").lower()
-            valid = checkvalid((self.mapdict[self.loc[0], self.loc[1]]), dir1,
-                               self.plr, self.mapdict)
+            valid = checkvalid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         if dir1 == "north" and self.loc[1] > 0:
             self.loc[1] = self.loc[1] - 1
         if dir1 == "east":
@@ -179,50 +178,50 @@ class Dungeon:
         if dir1 == "west" and self.loc[0] > 0:
             self.loc[0] = self.loc[0] - 1
         if dir1 == "pickup":
-            itemno = (self.mapdict[self.loc[0], self.loc[1]]).itemid
+            itemno = (self.mapdict[self.maplayer][self.loc[0], self.loc[1]]).itemid
             if itemno == 0:
                 self.plr.keys += 1
             elif itemno == 1:
                 self.plr.bosskeys += 1
             elif 1 < itemno < 6:
                 self.plr.items.append(Item(itemno - 2))
-            self.mapdict[self.loc[0], self.loc[1]].itemid = -1
+            self.mapdict[self.maplayer][self.loc[0], self.loc[1]].itemid = -1
         if dir1 == "help":
             self.help()
         self.load()
 
-    def write(self):
-        with open("save/dungeon.dmap", "w") as save:
-            for k, v in self.mapdict.items():
-                doorstates = [
-                    str(v.north),
-                    str(v.east),
-                    str(v.south),
-                    str(v.west)
-                ]
-                save.write(",".join([str(i) for i in k]) + ":" +
-                           ",".join(doorstates) + ";" + str(v.itemid))
-                save.write("\n")
+    #def write(self):
+    #   with open("save/dungeon.dmap", "w") as save:
+    #        for k, v in self.mapdict.items():
+    #            doorstates = [
+    #                str(v.north),
+    #                str(v.east),
+    #                str(v.south),
+    #                str(v.west)
+    #            ]
+    #            save.write(",".join([str(i) for i in k]) + ":" +
+    #                      ",".join(doorstates) + ";" + str(v.itemid))
+    #           save.write("\n")
 
-    def read(self):
-        with open("save/dungeon.dmap", "r") as save:
-            self.mapdict = {}
-            for x in save:
-                k, v = x.split(":")
-                self.mapdict[tuple([int(i) for i in k.split(",")])] = Room(
-                    int(k.split(",")[0]),
-                    int(k.split(",")[1]),
-                    [int(i) for i in v.split(";")[0].split(",")],
-                    itemid=int(v.split(";")[1]))
-        for k, v in self.mapdict.items():
-            v.encounter = create_encounter(self.plrs)
+    #def read(self):
+    #    with open("save/dungeon.dmap", "r") as save:
+    #        self.mapdict = {}
+    #        for x in save:
+    #            k, v = x.split(":")
+    #            self.mapdict[tuple([int(i) for i in k.split(",")])] = Room(
+    #                int(k.split(",")[0]),
+    #                int(k.split(",")[1]),
+    #                [int(i) for i in v.split(";")[0].split(",")],
+    #                itemid=int(v.split(";")[1]))
+    #    for k, v in self.mapdict.items():
+    #        v.encounter = create_encounter(self.plrs)
 
     def load(self):
         clear()
         print("Keys:", self.plr.keys)
         print("Boss keys:", self.plr.bosskeys)
-        self.mapdict[self.loc[0], self.loc[1]].load()
-        render_minimap(self.loc, self.mapdict, 10, 10)
+        self.mapdict[self.maplayer][self.loc[0], self.loc[1]].load()
+        render_minimap(self.loc, self.mapdict[self.maplayer], 10, 10)
 
     @staticmethod
     def assortenc():
@@ -231,7 +230,8 @@ class Dungeon:
     @staticmethod
     def help():
         clear()
-        print("Welcome to beanland we have many beans\nattaccs")
+        with open("helpdocument.txt") as f:
+            print(f.readlines())
         input()
         pass
 

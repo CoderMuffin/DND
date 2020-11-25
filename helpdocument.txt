@@ -1,0 +1,16 @@
+--Welcome--
+Welcome to this epic gamer simulation of epic gamerness haha yes
+
+--Basics--
+north/east/south/west -> Travel in said direction
+pickup -> Pick up the item in the room
+
+--Fighting--
+
+--Classes--
+
+--Attacks--
+
+--Potions--
+Red potion -> refill your health
+Blue potion -> 

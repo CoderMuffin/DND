@@ -126,7 +126,7 @@ class Encounter:
             if self.enemies == []:
                 print("You won!")
                 return True
-            input("\033[0")
+            input("\033[0m")
             clear()
 
 
