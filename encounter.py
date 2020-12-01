@@ -68,9 +68,9 @@ class EnemyType:
 
     def _attacks(self, idn):
         if idn == 0:
-            return [Attack("Flail", 3, 0, 5), Attack("Kick", 5, 1, 2)]
+            return [Attack("Flail", 2, 1, 5), Attack("Kick", 5, 1, 1)]
         elif idn == 1:
-            return [Attack("Kick", 4, 1, 5), Attack("Bowshot", 7, 1, 1)]
+            return [Attack("Flail", 2, 1, 2), Attack("Bowshot", 3, 0, 3)]
         elif idn == 2:
             return [Attack("Smash", 5, 2, 3),Attack("Roar", 6, 3, 1), Attack("Fire Breath", 7, 1, 2), Attack("Rage", 8, 1, 1), Attack("Heal", 3, 1, 1, beneficial=True)]
     
@@ -201,27 +201,35 @@ class Player:
                         str(self.keys) + "," + str(self.bosskeys) + "\n")
 
     def turn(self, encounter):
-        if input("Fight or Item? (f/i)").lower() == "f":
+        t = input("Fight or Item? (f/i)").lower()
+        if t == "f":
             return ["F", self.fight(encounter)]
-        else:
+        elif t == "i":
             return self.itemslist(encounter)
+        else:
+            print("Invalid")
+            return self.turn(encounter)
 
     def fight(self, encounter):
         print(self.name + ", choose an attack:")
         for i in range(self.lvl):
             try:
-                print("  " + str(i + 1) + ".) ", self.base.attacks[i].name,
-                      self.base.attacks[i].mp)
+                print("  " + str(i + 1) + ".) ", self.base.attacks[i].name,"- uses",
+                      str(self.base.attacks[i].mp)+"mp")
             except:
                 pass
         in1 = 99999
         while not in1 < self.lvl:
             try:
-                in1 = int(input("do: ")) - 1
-                if self.base.attacks[in1].mp > self.mp:
-                    print("Not enough mp")
-                    raise
-            except:
+                todo = input("do: ")
+                if todo=="back":
+                    return self.turn(encounter)[1]
+                else:
+                    in1 = int(todo) - 1
+                    if self.base.attacks[in1].mp > self.mp:
+                        print("Not enough mp")
+                        raise
+            except ValueError:
                 in1 = 9999999
         in2 = in1
         if not self.base.attacks[in2].glo:
@@ -257,19 +265,20 @@ class Player:
         if self.items == []:
             print("No items")
             x = self.turn(enc)
-            print(x)
             return x
         else:
             for i, item in enumerate(self.items):
                 print("  " + str(i + 1) + ".)", str(item))
             while True:
-                do = input("do:")
+                todo = input("do:")
+                if todo=="back":
+                    return self.turn(enc)
                 try:
-                    self.buffs.append(self.items[int(do) - 1].effect)
+                    self.buffs.append(self.items[int(todo) - 1].effect)
                     break
                 except:
                     print("Invalid")
-            del self.items[int(do) - 1]
+            del self.items[int(todo) - 1]
         return ["I"]
 
     def damage(self, d):

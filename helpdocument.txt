@@ -1,16 +1,28 @@
 --Welcome--
-Welcome to this epic gamer simulation of epic gamerness haha yes
+Welcome to this epic gamer simulation of epic gamerness haha yes merging the rooms is very bad and detrimental to its health i am confusion reeeeeeeeee
+
+Anyway this is our game it good and fun! Hope enjoy !!!
 
 --Basics--
 north/east/south/west -> Travel in said direction
 pickup -> Pick up the item in the room
+help -> Display this message
 
 --Fighting--
+f to fight
+do big damage 
+choose enemy
+you have mp there are attac that cost mp (after the attac name) (if say 0 then no mp cost)
+if you run out of mp u cant do any mp
 
 --Classes--
+there are different classes (?) that you can choose between (??????)
 
 --Attacks--
+do different attacs to make big hurt commit
+be careful of helth and mp
 
 --Potions--
-Red potion -> refill your health
-Blue potion -> 
+Red potion -> Refill your health
+Blue potion -> Temporarily increase attack damage
+Yellow potion -> Temporarily shield yourself from damage

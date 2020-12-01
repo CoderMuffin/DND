@@ -13,8 +13,8 @@ class DoorEnum:
 
 
 class WallEnum:
-    DOOR = "🚪"
-    LOCKEDDOOR = "ଠ"
+    DOOR = ""
+    LOCKEDDOOR = "O"
     BOSSDOOR = "#"
     XWALL = "-"
     YWALL = "|"
@@ -220,6 +220,7 @@ class Dungeon:
         clear()
         print("Keys:", self.plr.keys)
         print("Boss keys:", self.plr.bosskeys)
+        print("Type help if stuck")
         self.mapdict[self.maplayer][self.loc[0], self.loc[1]].load()
         render_minimap(self.loc, self.mapdict[self.maplayer], 10, 10)
 
@@ -231,7 +232,7 @@ class Dungeon:
     def help():
         clear()
         with open("helpdocument.txt") as f:
-            print(f.readlines())
+            print("".join(f.readlines()))
         input()
         pass
 
@@ -264,7 +265,10 @@ def genrooms(dict1, plrs):
     assigndoors(dict1)
     ret = []
     for i in dict1.keys():
+        r_itemid = -1
+        if randint(0, 4) == 0: # for testing  
+            r_itemid = randint(2,5)
         ret.append(
             Room(i[0], i[1], dict1[(i[0], i[1])][:4], create_encounter(plrs),
-                 dict1[(i[0], i[1])][4], dict1[(i[0], i[1])][5]))
+                 dict1[(i[0], i[1])][4], r_itemid))
     return ret

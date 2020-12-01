@@ -24,7 +24,7 @@ class Item:
         self.idn = idn
         if idn == 0:
             self.name = "Red Potion"
-            self.effect = Effect(0, 0)
+            self.effect = Effect(0, 1)
         elif idn == 1:
             self.name = "Blue Potion"
             self.effect = Effect(1, 1)

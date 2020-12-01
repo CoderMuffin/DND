@@ -20,6 +20,7 @@ except Exception as e:
     print(
         "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.\nError:",
         e)
+    raise e
 
 x.mapdict[0][(3, 3)].north = 1
 x.mapdict[0][(3, 2)].south = 1
@@ -40,7 +41,7 @@ while True:
             print(
                 "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.",
                 e)
-            break
+            raise e
 
 if lost:
     print("Game Over. Your final score was: {0}".format(p1.xp))
