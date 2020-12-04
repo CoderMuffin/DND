@@ -16,7 +16,7 @@ you have mp there are attac that cost mp (after the attac name) (if say 0 then n
 if you run out of mp u cant do any mp
 
 --Classes--
-there are different classes (?) that you can choose between (??????)
+there are different classes that you can choose between (??????)
 
 --Attacks--
 do different attacs to make big hurt commit

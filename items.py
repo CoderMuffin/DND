@@ -1,8 +1,7 @@
 class ItemEnum:
-    KEY = "🔑"
-    BOSSKEY = "@"
-    POTION = "ᵿ"
-
+    KEY = "o¬¬"
+    BOSSKEY = "@=@"
+    POTION = " ᵿ "
 
 class ItemEnum2:
     l = [
@@ -11,13 +10,24 @@ class ItemEnum2:
     ]
 
 
-
 class PotionEnum:
     RED = 0
     BLUE = 1
     YELLOW = 2
     PURPLE = 3
 
+
+def item_name_to_color(name):
+    if name=="Red Potion":
+        return "\033[1;31m"
+    elif name=="Blue Potion":
+        return "\033[1;35m"
+    elif name=="Yellow Potion":
+        return "\033[1;33m"
+    elif name=="Purple Potion":
+        return "\033[1;34m"
+    else:
+        return "no color"
 
 class Item:
     def __init__(self, idn):
@@ -31,6 +41,8 @@ class Item:
         elif idn == 2:
             self.name = "Yellow Potion"
             self.effect = Effect(2, 3)
+        elif idn == 3:
+            self.name = "debug"
 
     def __str__(self):
         return self.name

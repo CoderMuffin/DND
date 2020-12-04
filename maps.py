@@ -1,6 +1,6 @@
 from PUtils import *
 from encounter import *
-from items import *
+from items_v2 import *
 from random import randint
 from time import sleep
 
@@ -13,7 +13,7 @@ class DoorEnum:
 
 
 class WallEnum:
-    DOOR = ""
+    DOOR = " "
     LOCKEDDOOR = "O"
     BOSSDOOR = "#"
     XWALL = "-"
@@ -52,7 +52,7 @@ class Room:
             else:
                 print((self.calcDoorCostume(self.west, "Y") + (
                     (" " * 19) if self.itemid == -1 else (
-                    (" " * 9) + ItemEnum2.l[self.itemid] + (" " * 9)))) + self.calcDoorCostume(self.east, "Y"))
+                    (" " * 8) + Item(self.itemid).draw() + (" " * 8)))) + self.calcDoorCostume(self.east, "Y"))
         print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.south, "X") +
               (WallEnum.XWALL * 10))
         if self.encounter != None:
@@ -69,7 +69,7 @@ class Room:
                 self.doorstates[i] = room.doorStates[i]
 
 
-def flipdir(x):
+def invert_direction(x):
     if x == "north":
         return "south"
     elif x == "south":
@@ -82,7 +82,7 @@ def flipdir(x):
         return "no u"  # uno reverse card activate!
 
 
-def checkvalid(rm, dir1, plr, mapdict1):
+def check_direction_valid(rm, dir1, plr, mapdict1):
     if dir1 in ["north", "east", "south", "west"]:
         doorno = getattr(rm, dir1)
     elif dir1 == "pickup" and mapdict1[rm.x, rm.y].itemid != -1:
@@ -94,7 +94,7 @@ def checkvalid(rm, dir1, plr, mapdict1):
     if doorno == 0:
         return True
     elif doorno == 1 and plr.keys > 0:
-        plr.keys -= 1
+        plr.items=iter_drop_n(plr.items,lambda x:x.idn==0,1)
         setattr(rm, dir1, 0)
         xc = 0
         yc = 0
@@ -107,10 +107,10 @@ def checkvalid(rm, dir1, plr, mapdict1):
         elif dir1 == "west":
             xc = -1
         #error catch
-        setattr(mapdict1[(rm.x + xc, rm.y + yc)], flipdir(dir1), 0)
+        setattr(mapdict1[(rm.x + xc, rm.y + yc)], invert_direction(dir1), 0)
         return True
     elif doorno == 3 and plr.bosskeys > 0:
-        plr.bosskeys -= 1
+        plr.items=iter_drop_n(plr.items,lambda x:x.idn==1,1)
         setattr(rm, dir1, 0)
         xc = 0
         yc = 0
@@ -123,12 +123,12 @@ def checkvalid(rm, dir1, plr, mapdict1):
         elif dir1 == "west":
             xc = -1
         #error catch
-        setattr(mapdict1[(rm.x + xc, rm.y + yc)], flipdir(dir1), 0)
+        setattr(mapdict1[(rm.x + xc, rm.y + yc)], invert_direction(dir1), 0)
         return True
     return False
 
 
-def assigndoors(mapdict1):
+def assign_doors(mapdict1):
     for xy, doors in mapdict1.items():
         x = xy[0]
         y = xy[1]
@@ -165,10 +165,11 @@ class Dungeon:
 
     def prompt(self):
         dir1 = input(">").lower()
-        valid = checkvalid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
+        valid = check_direction_valid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         while not ((dir1 in ["north","east","south","west","pickup","help"]) and valid):
+            print(dir1)
             dir1 = input("Invalid. >").lower()
-            valid = checkvalid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
+            valid = check_direction_valid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         if dir1 == "north" and self.loc[1] > 0:
             self.loc[1] = self.loc[1] - 1
         if dir1 == "east":
@@ -180,9 +181,9 @@ class Dungeon:
         if dir1 == "pickup":
             itemno = (self.mapdict[self.maplayer][self.loc[0], self.loc[1]]).itemid
             if itemno == 0:
-                self.plr.keys += 1
+                self.plr.items.append(Item(0))
             elif itemno == 1:
-                self.plr.bosskeys += 1
+                self.plr.items.append(Item(1))
             elif 1 < itemno < 6:
                 self.plr.items.append(Item(itemno - 2))
             self.mapdict[self.maplayer][self.loc[0], self.loc[1]].itemid = -1
@@ -262,7 +263,7 @@ def create_encounter(plrs):
 
 
 def genrooms(dict1, plrs):
-    assigndoors(dict1)
+    assign_doors(dict1)
     ret = []
     for i in dict1.keys():
         r_itemid = -1
@@ -272,3 +273,102 @@ def genrooms(dict1, plrs):
             Room(i[0], i[1], dict1[(i[0], i[1])][:4], create_encounter(plrs),
                  dict1[(i[0], i[1])][4], r_itemid))
     return ret
+
+def generate_random_path(x, y, r, l):
+    from random import randint
+    dropped_keys = 0
+    room_info_dict = {}
+    room_info_dict[(x, y)] = [0, 0, 3, 0, False, -1]
+    cx = x + 1
+    cy = y
+    max_x_range = x + r
+    max_y_range = y + r
+    min_x_range = x - r
+    min_y_range = y - r
+    for i in range(l):
+        room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, -1]
+        attempts = 0
+        while attempts < 100:
+            attempts += 1
+            pcx = cx
+            pcy = cy
+            dir1 = randint(1, 3)
+            if dir1 == 1:
+                cx += 1
+            elif dir1 == 2:
+                cy -= 1
+            else:
+                cy += 1
+            try:
+                room_info_dict[(cx, cy)]
+                fail = False
+            except:
+                fail = True
+            if max_x_range > cx > min_x_range and max_y_range > cy > min_y_range and fail:
+                break
+            else:
+                cx = pcx
+                cy = pcy
+        if attempts >= 100:
+            print("Generation warning on iteration", i, "east")
+    room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, 0]
+    cx = x
+    cy = y - 1
+    for i in range(l):
+        room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, -1]
+        attempts = 0
+        while attempts < 100:
+            attempts += 1
+            pcx = cx
+            pcy = cy
+            dir1 = randint(1, 3)
+            if dir1 == 1:
+                cx += 1
+            elif dir1 == 2:
+                cx -= 1
+            else:
+                cy -= 1
+            try:
+                room_info_dict[(cx, cy)]
+                fail = False
+            except:
+                fail = True
+            if max_x_range > cx > min_x_range and max_y_range > cy > min_y_range and fail:
+                break
+            else:
+                cx = pcx
+                cy = pcy
+        if attempts >= 100:
+            print("Generation warning on iteration", i, "north")
+    room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, 0]
+    cx = x - 1
+    cy = y
+    for i in range(l):
+        room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, -1]
+        attempts = 0
+        while attempts < 100:
+            attempts += 1
+            pcx = cx
+            pcy = cy
+            dir1 = randint(1, 3)
+            if dir1 == 1:
+                cx -= 1
+            elif dir1 == 2:
+                cy += 1
+            else:
+                cy -= 1
+            try:
+                room_info_dict[(cx, cy)]
+                fail = False
+            except:
+                fail = True
+            if max_x_range > cx > min_x_range and max_y_range > cy > min_y_range and fail:
+                break
+            else:
+                cx = pcx
+                cy = pcy
+        if attempts >= 100:
+            print("Generation warning on iteration", i, "west")
+    room_info_dict[(cx, cy)] = [0, 0, 0, 0, False, 0]
+    room_info_dict[(x, y + 1)] = [3, 0, 0, 0, True, -1]
+    return room_info_dict

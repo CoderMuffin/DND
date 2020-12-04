@@ -1,5 +1,5 @@
 from PUtils import *
-from items import *
+from items_v2 import *
 
 
 class EnemyEnum:
@@ -50,11 +50,9 @@ class Enemy:
             return True
 
 class Boss(Enemy):
-    def __init__(self, idn):
-        self.base = EnemyType(idn)
-        self.name = self.base.typename
-        self.hp = self.base.maxhp
-        self.xp = self.base.xpr
+    def __init__(self, idn, skin):
+        self.skin = skin
+        super().__init__(idn)
 
 class EnemyType:
     def __init__(self, idn):
@@ -86,6 +84,10 @@ class Encounter:
         while True:
             clear()
             for enemy in self.enemies:
+                if isinstance(enemy,Boss):
+                    import os
+                    os.system("cat "+enemy.skin)
+                    print()
                 useenemy(enemy, enemy.fight(self), self)
                 print()
             for player in self.players:
@@ -101,7 +103,7 @@ class Encounter:
                     if buff.duration < 0:
                         player.buffs.remove(buff)
                         if buff.idn == 1:
-                            player.base = PlayerType(
+                            player.base = PlayerBase(
                                 getattr(PlayerEnum,
                                         player.cls))  #reset attack dmg
                         if buff.idn == 2:
@@ -125,8 +127,9 @@ class Encounter:
                     self.enemies.remove(enemy)
             if self.enemies == []:
                 print("You won!")
+                clear()
                 return True
-            input("\033[0m")
+            input()
             clear()
 
 
@@ -139,14 +142,17 @@ class Player:
         self.lvl = 0
         self.xp = 0
         self.mp = 0
-        self.keys = 0
-        self.bosskeys = 0
         self.buffs = []
         self.items = []
         self.signature = signature
         self.shielded = False
         self.load(signature)
-
+    @property
+    def bosskeys(self):
+        return sum(i.idn==1 for i in self.items)
+    @property
+    def keys(self):
+        return sum(i.idn==0 for i in self.items)
     def load(self, ln):
         with open("save/savedata.csv") as f:
             lineno = 0
@@ -155,7 +161,7 @@ class Player:
                     self.parsedata(line.rstrip("\n"))
                     return
                 lineno += 1
-        self.base = PlayerType(int(input("class: ")))
+        self.base = PlayerBase(int(input("class: ")))
         self.parsedata(self.base.cls + "," + str(self.base.maxhp) + ",3," +
                        input("name: ") + ",0,0,0")
 
@@ -166,14 +172,12 @@ class Player:
         self.lvl = int(spldat[2])
         self.name = spldat[3]
         self.xp = int(spldat[4])
-        self.keys = int(spldat[5])
-        self.bosskeys = int(spldat[6])
         self.items = spldat[7].split(":")
         index = 0
         for i in self.items:
             self.items[index] = Item(int(i))
             index += 1
-        self.base = PlayerType(getattr(PlayerEnum, self.cls))
+        self.base = PlayerBase(getattr(PlayerEnum, self.cls))
         self.mp = self.base.maxmp
 
     def save(self):
@@ -203,7 +207,7 @@ class Player:
     def turn(self, encounter):
         t = input("Fight or Item? (f/i)").lower()
         if t == "f":
-            return ["F", self.fight(encounter)]
+            return self.fight(encounter)
         elif t == "i":
             return self.itemslist(encounter)
         else:
@@ -223,7 +227,7 @@ class Player:
             try:
                 todo = input("do: ")
                 if todo=="back":
-                    return self.turn(encounter)[1]
+                    return self.turn(encounter)
                 else:
                     in1 = int(todo) - 1
                     if self.base.attacks[in1].mp > self.mp:
@@ -245,7 +249,7 @@ class Player:
                         in1 = int(input("do: ")) - 1
                     except:
                         in1 = 99999
-                return [self.base.attacks[in2], encounter.players[in1]]
+                return ["F",[self.base.attacks[in2], encounter.players[in1]]]
             else:
                 for i in range(len(encounter.enemies)):
                     print(
@@ -257,9 +261,9 @@ class Player:
                         in1 = int(input("do: ")) - 1
                     except:
                         in1 = 99999
-                return [self.base.attacks[in2], encounter.enemies[in1]]
+                return ["F",[self.base.attacks[in2], encounter.enemies[in1]]]
         else:
-            return [self.base.attacks[in2], "ALL"]
+            return ["F",[self.base.attacks[in2], "ALL"]]
 
     def itemslist(self, enc):
         if self.items == []:
@@ -274,8 +278,9 @@ class Player:
                 if todo=="back":
                     return self.turn(enc)
                 try:
-                    self.buffs.append(self.items[int(todo) - 1].effect)
-                    break
+                    #self.buffs.append(self.items[int(todo) - 1].effect)
+                    if self.items[int(todo)-1].action(self):
+                        break
                 except:
                     print("Invalid")
             del self.items[int(todo) - 1]
@@ -302,11 +307,11 @@ class PlayerEnum:
     Barbarian = 3
 
 
-class PlayerType:
+class PlayerBase:
     def __init__(self, idn):
         types = ["Warrior", "Cleric", "Mage", "Barbarian"]
         hps = [30, 26, 28, 24]
-        mps = [20, 30, 40, 10]
+        mps = [8, 12, 20, 8]
         self.attacks = self._attacks(idn)
         self.maxhp = hps[idn]
         self.cls = types[idn]

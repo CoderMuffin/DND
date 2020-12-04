@@ -15,7 +15,7 @@ p1.save()
 #enc=Encounter([p1],[e1,e2])
 #enc.fire()
 try:
-    x = Dungeon(genrooms(pathrand(3, 3, 4, 5), [p1]), [p1])
+    x = Dungeon(genrooms(generate_random_path(3, 3, 4, 5), [p1]), [p1])
 except Exception as e:
     print(
         "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.\nError:",
@@ -23,10 +23,11 @@ except Exception as e:
     raise e
 
 x.mapdict[0][(3, 3)].north = 1
+x.mapdict[0][(3, 3)].itemid = 1
 x.mapdict[0][(3, 2)].south = 1
 #x.read()
 x.mapdict[0][(3, 4)] = Room(
-    3, 4, [3, 2, 2, 2], boss=True, enc=Encounter(p1, Enemy(2)))
+    3, 4, [3, 2, 2, 2], boss=True, enc=Encounter([p1], [Boss(2,"dragonascii.txt")]))
 x.load()  # force load the new doors
 lost = False
 while True:
