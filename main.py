@@ -1,8 +1,7 @@
-
+#go east at the start and see what i have made
 
 from encounter import *
-#Dylan, keys and bosskeys have been replaced with item ids. 0=key,1=bosskey. See save file for more info
-#John I added proper "Game Over" but atm it only works for 1 player
+
 from maps import *
 from time import sleep
 from PUtils import *
@@ -24,6 +23,8 @@ except Exception as e:
 
 x.mapdict[0][(3, 3)].north = 1
 x.mapdict[0][(3, 3)].itemid = 1
+x.mapdict[0][(2, 3)].itemid = 4
+x.mapdict[0][(4, 3)].itemid = 5
 x.mapdict[0][(3, 2)].south = 1
 #x.read()
 x.mapdict[0][(3, 4)] = Room(
@@ -36,12 +37,14 @@ while True:
         x.prompt()
     except Exception as e:  #for now
         if "YOU LOSE" in str(e):
+            with open("GameOver.txt") as f:
+                print("\033[1;31m"+"".join(f.readlines()))
+            print()
             lost = True
             break
         else:
             print(
-                "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.",
-                e)
+                "An unexpected error occurred. Please rerun the program. We are sorry for any inconvieniences this error message may have caused you.",e)
             raise e
 
 if lost:

@@ -43,7 +43,7 @@ class Room:
         elif cstm == 3:
             return WallEnum.BOSSDOOR
 
-    def load(self):
+    def draw(self):
         print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.north, "X") +
               (WallEnum.XWALL * 10))
         for i in range(7):
@@ -52,13 +52,15 @@ class Room:
             else:
                 print((self.calcDoorCostume(self.west, "Y") + (
                     (" " * 19) if self.itemid == -1 else (
-                    (" " * 8) + Item(self.itemid).draw() + (" " * 8)))) + self.calcDoorCostume(self.east, "Y"))
+                    (" " * 7) + Item(self.itemid).draw() + (" " * 7)))) + self.calcDoorCostume(self.east, "Y"))
         print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.south, "X") +
               (WallEnum.XWALL * 10))
+    def load(self):
         if self.encounter != None:
             if not self.encounter.fire():
                 raise Exception("YOU LOSE")
             self.encounter = None
+        self.draw()
 
     def checkroom(self, dir1):
         return getattr(self, dir1) != 2
@@ -83,6 +85,19 @@ def invert_direction(x):
 
 
 def check_direction_valid(rm, dir1, plr, mapdict1):
+    if dir1 in ["up","down"]:
+        print("\033[1;33myou are not a helicopter\033[0m")
+        return False
+    if dir1 == "codermuffin":
+        print("\033[38;5;27mHello there, "+plr.name+"!\033[0m")
+        return True
+    if dir1 in ["info","i"]:
+        clear()
+        print("Player info")
+        plr.info()
+        input()
+        clear()
+        return True
     if dir1 in ["north", "east", "south", "west"]:
         doorno = getattr(rm, dir1)
     elif dir1 == "pickup" and mapdict1[rm.x, rm.y].itemid != -1:
@@ -94,7 +109,7 @@ def check_direction_valid(rm, dir1, plr, mapdict1):
     if doorno == 0:
         return True
     elif doorno == 1 and plr.keys > 0:
-        plr.items=iter_drop_n(plr.items,lambda x:x.idn==0,1)
+        plr.items=remove_one(plr.items,lambda x:x.idn==0)
         setattr(rm, dir1, 0)
         xc = 0
         yc = 0
@@ -110,7 +125,7 @@ def check_direction_valid(rm, dir1, plr, mapdict1):
         setattr(mapdict1[(rm.x + xc, rm.y + yc)], invert_direction(dir1), 0)
         return True
     elif doorno == 3 and plr.bosskeys > 0:
-        plr.items=iter_drop_n(plr.items,lambda x:x.idn==1,1)
+        plr.items=remove_one(plr.items,lambda x:x.idn==1)
         setattr(rm, dir1, 0)
         xc = 0
         yc = 0
@@ -151,6 +166,12 @@ def assign_doors(mapdict1):
         except:
             mapdict1[x, y][3] = 2
 
+convertlist = {'n':'north','s':'south','e':'east','w':'west','p':'pickup','i':'info'}
+
+def convertdir(dir1):
+    if dir1 in convertlist.keys():
+        dir1 = convertlist[dir1]
+    return dir1
 
 class Dungeon:
     def __init__(self, rooms, plrs):
@@ -165,10 +186,12 @@ class Dungeon:
 
     def prompt(self):
         dir1 = input(">").lower()
+
+        dir1 = convertdir(dir1)
         valid = check_direction_valid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         while not ((dir1 in ["north","east","south","west","pickup","help"]) and valid):
-            print(dir1)
             dir1 = input("Invalid. >").lower()
+            dir1 = convertdir(dir1)
             valid = check_direction_valid((self.mapdict[self.maplayer][self.loc[0], self.loc[1]]), dir1, self.plr, self.mapdict[self.maplayer])
         if dir1 == "north" and self.loc[1] > 0:
             self.loc[1] = self.loc[1] - 1
@@ -180,12 +203,7 @@ class Dungeon:
             self.loc[0] = self.loc[0] - 1
         if dir1 == "pickup":
             itemno = (self.mapdict[self.maplayer][self.loc[0], self.loc[1]]).itemid
-            if itemno == 0:
-                self.plr.items.append(Item(0))
-            elif itemno == 1:
-                self.plr.items.append(Item(1))
-            elif 1 < itemno < 6:
-                self.plr.items.append(Item(itemno - 2))
+            self.plr.items.append(Item(itemno))
             self.mapdict[self.maplayer][self.loc[0], self.loc[1]].itemid = -1
         if dir1 == "help":
             self.help()
@@ -223,6 +241,7 @@ class Dungeon:
         print("Boss keys:", self.plr.bosskeys)
         print("Type help if stuck")
         self.mapdict[self.maplayer][self.loc[0], self.loc[1]].load()
+
         render_minimap(self.loc, self.mapdict[self.maplayer], 10, 10)
 
     @staticmethod
@@ -257,8 +276,7 @@ def render_minimap(loc, mapdict, rx, ry):
 
 
 def create_encounter(plrs):
-    return ((Encounter(plrs, [Enemy(randint(0, 1)),
-                              Enemy(randint(0, 1))][:randint(1, 2)]))
+    return ((Encounter(plrs, [Enemy(randint(0, 1)),Enemy(randint(0, 1))][:randint(1, 2)]))
             if randint(0, 5) == 0 else None)
 
 
@@ -267,8 +285,8 @@ def genrooms(dict1, plrs):
     ret = []
     for i in dict1.keys():
         r_itemid = -1
-        if randint(0, 4) == 0: # for testing  
-            r_itemid = randint(2,5)
+        if randint(0, 4) == 0: 
+            r_itemid = randint(2,4)
         ret.append(
             Room(i[0], i[1], dict1[(i[0], i[1])][:4], create_encounter(plrs),
                  dict1[(i[0], i[1])][4], r_itemid))

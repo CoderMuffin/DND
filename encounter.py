@@ -84,6 +84,10 @@ class Encounter:
         while True:
             clear()
             for enemy in self.enemies:
+                printEnemyHp(enemy)
+            print()
+            for enemy in self.enemies:
+                
                 if isinstance(enemy,Boss):
                     import os
                     os.system("cat "+enemy.skin)
@@ -98,7 +102,6 @@ class Encounter:
                 return False
             for player in self.players:
                 for buff in player.buffs:
-                    buff.inflict(player)
                     buff.duration -= 1
                     if buff.duration < 0:
                         player.buffs.remove(buff)
@@ -115,6 +118,9 @@ class Encounter:
                 t = player.turn(self)
                 if t[0] == "F":
                     useplayer(player, t[1], self)
+                elif t[0] == "R":
+                    if t[1]:
+                        self.enemies=[]
                 else:
                     #item
                     pass
@@ -127,6 +133,7 @@ class Encounter:
                     self.enemies.remove(enemy)
             if self.enemies == []:
                 print("You won!")
+                input()
                 clear()
                 return True
             input()
@@ -147,6 +154,8 @@ class Player:
         self.signature = signature
         self.shielded = False
         self.load(signature)
+    def info(self):
+        print(self.name+"\n"+"-"*len(self.name)+"\nHP:",self.hp,"/",self.base.maxhp)
     @property
     def bosskeys(self):
         return sum(i.idn==1 for i in self.items)
@@ -205,7 +214,26 @@ class Player:
                         str(self.keys) + "," + str(self.bosskeys) + "\n")
 
     def turn(self, encounter):
-        t = input("Fight or Item? (f/i)").lower()
+        t = input("Fight, Item or Run? (f,i,r)").lower()
+        #run
+        if t == "r":
+            import random
+            if sum([isinstance(a,Boss) for a in encounter.enemies]):#contains boss?
+                print("You can't run from a boss!")
+                return self.turn(encounter)
+            if random.randint(1,4) == 1:
+                print("You successfully escaped the encounter!")
+                return ["R",True]
+            else:
+                print("You tried to run, but it failed!")
+                return ["R",False]
+
+        if t == "no u":
+            print("\033[1;33muno reverse card activate!\033[0m")
+            return self.turn(encounter)
+        if t == "uwu":
+            print("\033[1;33mowo\033[0m")
+            return self.turn(encounter)
         if t == "f":
             return self.fight(encounter)
         elif t == "i":
@@ -280,6 +308,12 @@ class Player:
                 try:
                     #self.buffs.append(self.items[int(todo) - 1].effect)
                     if self.items[int(todo)-1].action(self):
+
+                        for buff in self.buffs:
+                            buff.inflict(self)
+                        if self.hp > self.base.maxhp:
+                            self.hp = self.base.maxhp
+                        print(self.items[int(todo)-1].actionmessage)
                         break
                 except:
                     print("Invalid")

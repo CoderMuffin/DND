@@ -1,18 +1,23 @@
 from os import system, name
 
-def iter_drop_n(data, condition, drop):
-    dropped = 0
+# Print iterations progress
+def printEnemyHp(enemy):
+    printProgressBar(enemy.hp,enemy.base.maxhp,enemy.name)
+    
+def printProgressBar(iteration, total, prefix='', suffix = '', length = 30, fill = '#'):
+    percent = iteration
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print(f'{prefix} [{bar}] {percent}hp {suffix}')
+    # Print New Line on Complete
 
-    for item in data:
-        if dropped >= drop:
-            yield item
-            continue
+def remove_one(arr, condition_lambda):
+    for i, item in enumerate(arr):
+        if condition_lambda(item):
+            del arr[i]
 
-        if condition(item):
-            dropped += 1
-            continue
-
-        yield item
+    return arr
+        
 def clear():
     if name == 'nt':
         _ = system('cls')
