@@ -2,9 +2,12 @@ from os import system, name
 
 # Print iterations progress
 def printEnemyHp(enemy):
-    printProgressBar(enemy.hp,enemy.base.maxhp,enemy.name)
+    printProgressBar(enemy.hp,enemy.base.maxhp,"\033[1;31m"+enemy.name)
+
+def printPlayerHp(plr):
+    printProgressBar(plr.hp,plr.base.maxhp,"\033[1;32m"+plr.name)
     
-def printProgressBar(iteration, total, prefix='', suffix = '', length = 30, fill = '#'):
+def printProgressBar(iteration, total, prefix='', suffix = '\033[0m', length = 30, fill = '#'):
     percent = iteration
     filledLength = int(length * iteration // total)
     bar = fill * filledLength + '-' * (length - filledLength)

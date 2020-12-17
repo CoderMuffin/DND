@@ -83,8 +83,7 @@ class Encounter:
             p.mp = p.base.maxmp
         while True:
             clear()
-            for enemy in self.enemies:
-                printEnemyHp(enemy)
+
             print()
             for enemy in self.enemies:
                 
@@ -94,6 +93,10 @@ class Encounter:
                     print()
                 useenemy(enemy, enemy.fight(self), self)
                 print()
+            for enemy in self.enemies:
+                printEnemyHp(enemy)
+            for player in self.players:
+                printPlayerHp(player)
             for player in self.players:
                 if player.hp <= 0:
                     self.players.remove(player)
@@ -155,7 +158,10 @@ class Player:
         self.shielded = False
         self.load(signature)
     def info(self):
-        print(self.name+"\n"+"-"*len(self.name)+"\nHP:",self.hp,"/",self.base.maxhp)
+        itemslist=[]
+        for i in self.items:
+            itemslist.append(i.name)
+        print("\n"+self.name+"\n"+"-"*len(self.name)+"\nHP:",self.hp,"/",str(self.base.maxhp)+"\nMP:",self.mp,"/",str(self.base.maxmp)+"\nItems:\n\t"+"\n\t".join(itemslist)+"\nXP: "+str(self.xp))
     @property
     def bosskeys(self):
         return sum(i.idn==1 for i in self.items)
@@ -250,8 +256,8 @@ class Player:
                       str(self.base.attacks[i].mp)+"mp")
             except:
                 pass
-        in1 = 99999
-        while not in1 < self.lvl:
+        in1 = 999999999
+        while in1 >= self.lvl:
             try:
                 todo = input("do: ")
                 if todo=="back":
@@ -260,9 +266,9 @@ class Player:
                     in1 = int(todo) - 1
                     if self.base.attacks[in1].mp > self.mp:
                         print("Not enough mp")
-                        raise
-            except ValueError:
-                in1 = 9999999
+                        in1=999999999
+            except (ValueError, IndexError):
+                in1 = 999999999
         in2 = in1
         if not self.base.attacks[in2].glo:
             print("Choose a target:")
