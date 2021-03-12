@@ -1,7 +1,11 @@
 #go east at the start and see what i have made
 
 from encounter import *
-
+from save_encrypt import EncryptDecrypt
+'''a = EncryptDecrypt.encrypt("BEAN")
+print(a)
+print(EncryptDecrypt.decrypt(a))
+exit()'''
 from maps import *
 from time import sleep
 from PUtils import *

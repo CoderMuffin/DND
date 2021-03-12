@@ -19,19 +19,30 @@ class WallEnum:
     XWALL = "-"
     YWALL = "|"
 
+class StairEnum:
+    UP = "/\\"
+    DOWN = "\\/"
 
-class Room:
-    def __init__(self, x, y, doorStates, enc=None, boss=False, itemid=-1, stairs=False):
+class Tile:
+    def __init__(self, x, y, itemid=-1):
+        self.x = x
+        self.y = y
+        self.itemid = itemid
+        
+class Stairs(Tile):
+    def __init__(self, x, y, stairType):
+        super().__init__(x, y)
+        self.stairType = stairType
+        
+class Room(Tile):
+    def __init__(self, x, y, itemid, doorStates, enc=None, boss=False):
+        super().__init__(x, y, itemid)
         self.north = doorStates[0]
         self.east = doorStates[1]
         self.south = doorStates[2]
         self.west = doorStates[3]
-        self.stairs = stairs
         self.encounter = enc
-        self.x = x
-        self.y = y
         self.boss = boss
-        self.itemid = itemid
 
     def calcDoorCostume(self, cstm, XOrY):
         if cstm == 0:
@@ -42,25 +53,47 @@ class Room:
             return (WallEnum.XWALL if XOrY == "X" else WallEnum.YWALL)
         elif cstm == 3:
             return WallEnum.BOSSDOOR
-
-    def draw(self):
-        print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.north, "X") +
-              (WallEnum.XWALL * 10))
-        for i in range(7):
-            if i != 3:
-                print(WallEnum.YWALL + (" " * 19) + WallEnum.YWALL)
-            else:
-                print((self.calcDoorCostume(self.west, "Y") + (
-                    (" " * 19) if self.itemid == -1 else (
-                    (" " * 7) + Item(self.itemid).draw() + (" " * 7)))) + self.calcDoorCostume(self.east, "Y"))
-        print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.south, "X") +
-              (WallEnum.XWALL * 10))
+                
     def load(self):
         if self.encounter != None:
-            if not self.encounter.fire():
+            if not self.encounter.trigger():
                 raise Exception("YOU LOSE")
             self.encounter = None
         self.draw()
+        
+
+    def draw(self):
+        import spritesheet
+        if not self.boss:
+            if self.itemid!=-1:
+                item_replacement = Item(self.itemid).draw()
+            else:
+                item_replacement = " "
+            print(spritesheet.SPRITES.ROOM\
+            .replace("N",self.calcDoorCostume(self.north, "X"))\
+            .replace("S",self.calcDoorCostume(self.south,"X"))\
+            .replace("W",self.calcDoorCostume(self.west,"Y"))\
+            .replace("E",self.calcDoorCostume(self.east,"Y"))\
+            .replace("I",item_replacement))
+        else:
+            with open('dragonascii.txt', 'r') as f:
+                print(f.read()+'\n')
+    def draw_obsolete(self):
+        if not self.boss:
+            print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.north, "X") +
+                (WallEnum.XWALL * 10))
+            for i in range(7):
+                if i != 3:
+                    print(WallEnum.YWALL + (" " * 19) + WallEnum.YWALL)
+                else:
+                    print((self.calcDoorCostume(self.west, "Y") + (
+                        (" " * 19) if self.itemid == -1 else (
+                        (" " * 7) + Item(self.itemid).draw() + (" " * 7)))) + self.calcDoorCostume(self.east, "Y"))
+            print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.south, "X") +
+                (WallEnum.XWALL * 10))
+        else: #print boss
+            with open('dragonascii.txt', 'r') as f:
+                print(f.read()+'\n')
 
     def checkroom(self, dir1):
         return getattr(self, dir1) != 2
@@ -81,7 +114,7 @@ def invert_direction(x):
     elif x == "east":
         return "west"
     else:
-        return "no u"  # uno reverse card activate!
+        return "no u" #uno reverse card activate!
 
 
 def check_direction_valid(rm, dir1, plr, mapdict1):

@@ -77,7 +77,7 @@ class Encounter:
         self.enemies = enemies
         self.players = players
 
-    def fire(self):
+    def trigger(self):
         flash()
         for p in self.players:
             p.mp = p.base.maxmp
@@ -157,17 +157,20 @@ class Player:
         self.signature = signature
         self.shielded = False
         self.load(signature)
+        
     def info(self):
         itemslist=[]
         for i in self.items:
             itemslist.append(i.name)
         print("\n"+self.name+"\n"+"-"*len(self.name)+"\nHP:",self.hp,"/",str(self.base.maxhp)+"\nMP:",self.mp,"/",str(self.base.maxmp)+"\nItems:\n\t"+"\n\t".join(itemslist)+"\nXP: "+str(self.xp))
+
     @property
-    def bosskeys(self):
+    def bosskeys(self): #for backwards compatibility
         return sum(i.idn==1 for i in self.items)
     @property
-    def keys(self):
+    def keys(self): #for backwards compatibility
         return sum(i.idn==0 for i in self.items)
+
     def load(self, ln):
         with open("save/savedata.csv") as f:
             lineno = 0
