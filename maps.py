@@ -13,11 +13,11 @@ class DoorEnum:
 
 
 class WallEnum:
+    XWALL="-"
+    YWALL="|"
     DOOR = " "
     LOCKEDDOOR = "O"
     BOSSDOOR = "#"
-    XWALL = "-"
-    YWALL = "|"
 
 class StairEnum:
     UP = "/\\"
@@ -35,7 +35,7 @@ class Stairs(Tile):
         self.stairType = stairType
         
 class Room(Tile):
-    def __init__(self, x, y, itemid, doorStates, enc=None, boss=False):
+    def __init__(self, x, y, doorStates, enc=None, boss=False, itemid=None):
         super().__init__(x, y, itemid)
         self.north = doorStates[0]
         self.east = doorStates[1]
