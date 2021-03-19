@@ -68,7 +68,7 @@ class Room(Tile):
             if self.itemid!=-1:
                 item_replacement = Item(self.itemid).draw()
             else:
-                item_replacement = " "
+                item_replacement = "     "
             print(spritesheet.SPRITES.ROOM\
             .replace("N",self.calcDoorCostume(self.north, "X"))\
             .replace("S",self.calcDoorCostume(self.south,"X"))\
@@ -77,7 +77,9 @@ class Room(Tile):
             .replace("I",item_replacement))
         else:
             with open('dragonascii.txt', 'r') as f:
-                print(f.read()+'\n')
+                print(f.read()+'\n\n')
+    
+    
     def draw_obsolete(self):
         if not self.boss:
             print((WallEnum.XWALL * 10) + self.calcDoorCostume(self.north, "X") +

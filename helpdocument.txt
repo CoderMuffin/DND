@@ -10,7 +10,8 @@ help -> Display this message
 
 --Fighting--
 f to fight
-do big damage 
+is f because f in chat for the enemy
+do big damage
 choose enemy
 you have mp there are attac that cost mp (after the attac name) (if say 0 then no mp cost)
 if you run out of mp u cant do any mp
@@ -19,10 +20,11 @@ if you run out of mp u cant do any mp
 there are different classes that you can choose between (??????)
 
 --Attacks--
-do different attacs to make big hurt commit
+do different attacs to make big hurt commit yes very good dletet enemy :))))))))))))))))))))))))))))))) 
 be careful of helth and mp
 
 --Potions--
 Red potion -> Refill your health
 Blue potion -> Temporarily increase attack damage
-Yellow potion -> Temporarily shield yourself from damage
+Yellow potion -> Temporarily shield yourself from 50% of damage
+Purple potion -> Restores all mp

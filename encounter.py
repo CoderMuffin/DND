@@ -83,62 +83,77 @@ class Encounter:
             p.mp = p.base.maxmp
         while True:
             clear()
-
             print()
+
+            
             for enemy in self.enemies:
-                
                 if isinstance(enemy,Boss):
                     import os
                     os.system("cat "+enemy.skin)
                     print()
                 useenemy(enemy, enemy.fight(self), self)
                 print()
+            
+            #display hps
             for enemy in self.enemies:
                 printEnemyHp(enemy)
             for player in self.players:
                 printPlayerHp(player)
+            
+            #kill dead players
             for player in self.players:
                 if player.hp <= 0:
                     self.players.remove(player)
-            if self.players == []:
+                    print(player.name,"is unable to fight!")
+            
+            #exit on no players
+            if len(self.players)==0:
                 print("You lost")
                 return False
+            
+            #decrease buff durations
             for player in self.players:
                 for buff in player.buffs:
                     buff.duration -= 1
                     if buff.duration < 0:
                         player.buffs.remove(buff)
                         if buff.idn == 1:
-                            player.base = PlayerBase(
-                                getattr(PlayerEnum,
-                                        player.cls))  #reset attack dmg
+                            player.base = PlayerBase(getattr(PlayerEnum, player.cls))  #reset attack dmg
                         if buff.idn == 2:
                             player.shielded = False
-                print(player.name + ":",
-                      "HP: " + str(player.hp) + ", MP Left: " + str(player.mp))
+                
+                #display player info
+                print(player.name + ":", "HP: " + str(player.hp) + ", MP Left: " + str(player.mp))
+            
             print()
             for player in self.players:
-                t = player.turn(self)
-                if t[0] == "F":
+                turnData = player.turn(self)
+                if turnData[0] == "F":
                     useplayer(player, t[1], self)
-                elif t[0] == "R":
-                    if t[1]:
+                elif turnData[0] == "R":
+                    if turnData[1]:
                         self.enemies=[]
                 else:
                     #item
                     pass
                 print()
+            
+            #kill dead enemies
             for enemy in self.enemies:
                 if enemy.hp <= 0:
                     for p in self.players:
                         print("Awarded", p.name, enemy.xp, "XP")
                         p.xp += enemy.xp
                     self.enemies.remove(enemy)
+
+            #enable win
             if self.enemies == []:
                 print("You won!")
                 input()
                 clear()
                 return True
+
+            #wait for newline
             input()
             clear()
 
@@ -222,7 +237,9 @@ class Player:
                         "," + self.name + "," + str(self.xp) + "," +
                         str(self.keys) + "," + str(self.bosskeys) + "\n")
 
+
     def turn(self, encounter):
+        """Returns a variable length array. [attack-type,was successful/info]"""
         t = input("Fight, Item or Run? (f,i,r)").lower()
         #run
         if t == "r":
@@ -237,12 +254,15 @@ class Player:
                 print("You tried to run, but it failed!")
                 return ["R",False]
 
+        #eggster eggs
         if t == "no u":
             print("\033[1;33muno reverse card activate!\033[0m")
             return self.turn(encounter)
         if t == "uwu":
             print("\033[1;33mowo\033[0m")
             return self.turn(encounter)
+        
+        
         if t == "f":
             return self.fight(encounter)
         elif t == "i":
@@ -315,9 +335,7 @@ class Player:
                 if todo=="back":
                     return self.turn(enc)
                 try:
-                    #self.buffs.append(self.items[int(todo) - 1].effect)
                     if self.items[int(todo)-1].action(self):
-
                         for buff in self.buffs:
                             buff.inflict(self)
                         if self.hp > self.base.maxhp:
@@ -330,10 +348,11 @@ class Player:
         return ["I"]
 
     def damage(self, d):
-        from random import randint
-        if self.shielded and randint(0, 3) == 0:
+        """Returns a boolean telling us if the player survived"""
+        if self.shielded:
             print(self.name, "shielded!")
-            print("No damage was dealt!\n")
+            print("50% of damage was blocked!\n")
+            self.hp -= d*0.5
             return True
         else:
             self.hp -= d
