@@ -4,14 +4,14 @@ class PrintEnum:
 
 PRINTSTREAM = PrintEnum.DISCORDSTREAM
 
-def __print_override(*abcd):
+def print_override(*abcd):
     import builtins
     if PRINTSTREAM==0:
         builtins.print(*abcd)
     else:
         pass
 
-#print = __print_override
+#print = print_override
 
 
 
@@ -25,7 +25,6 @@ exit()'''
 from maps import *
 from time import sleep
 from PUtils import *
-import keep_alive
 e1 = Enemy(EnemyEnum.UNDEAD)
 e2 = Enemy(EnemyEnum.UNDEAD)
 p1 = Player(0)
@@ -34,7 +33,6 @@ p1.save()
 #p2.save()
 #enc=Encounter([p1],[e1,e2])
 #enc.fire()
-keep_alive.keep_alive()
 try:
     x = Dungeon(genrooms(generate_random_path(3, 3, 4, 5), [p1]), [p1])
 except Exception as e:
